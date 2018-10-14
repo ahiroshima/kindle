@@ -1,6 +1,6 @@
-# kindle
-
-- Amazon Product Advertising APIを利用して、指定したノードのKindle本リストを取得して、WordPressに投稿する
+# 概要
+- Amazon Product Advertising APIを利用して、指定したノードのKindle本リストを取得
+- 取得したデータをHTMLにパースし、WordPressに投稿する
 
 # 環境
 下記クレデンシャルは環境変数から取得
