@@ -102,3 +102,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+api_info.sh
+credentials.csv
+venv_kindle
