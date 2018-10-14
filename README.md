@@ -9,3 +9,6 @@ AMAZON_SECRET_KEY
 AMAZON_ASSOC_TAG
 WP_USER
 WP_PASS
+
+# 前提
+Amazon Product Advertising APIを利用する為にはアマゾンアソシエイトへの登録が必要です
