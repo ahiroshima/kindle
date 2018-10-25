@@ -10,5 +10,8 @@ AMAZON_ASSOC_TAG
 WP_USER
 WP_PASS
 
+# セットアップ
+pip install -r requirements.txt
+
 # 前提
 Amazon Product Advertising APIを利用する為にはアマゾンアソシエイトへの登録が必要です
