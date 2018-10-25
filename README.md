@@ -13,5 +13,11 @@ WP_PASS
 # セットアップ
 pip install -r requirements.txt
 
+Raspberry piで動かす時に
+- Couldn't find a tree builder with the features you requested: lxml. Do you need to install a parser library?
+とエラーが出たら、
+sudo apt install python-lxml
+を実行すると解決する。
+
 # 前提
 Amazon Product Advertising APIを利用する為にはアマゾンアソシエイトへの登録が必要です
