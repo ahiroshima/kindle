@@ -105,3 +105,5 @@ venv.bak/
 api_info.sh
 credentials.csv
 venv_kindle
+output.html
+kindle_list.template
