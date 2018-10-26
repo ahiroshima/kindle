@@ -15,7 +15,7 @@ page_id = "398"     # ポスト対象のページID 事前にWordPressのAPIな�
 user_id = 2         #投稿ユーザーID、事前にWordPressで確認しておく
 category_ids = [80] #Kindle Booksカテゴリー
 
-def create_post(title_, contents_):
+def post_contents(title_, contents_):
     # credential情報は環境変数から取得
     WP_USER = os.environ.get('WP_USER')
     WP_PASS = os.environ.get('WP_PASS')
@@ -84,6 +84,6 @@ def get_kindle_list():
 if __name__ == "__main__":
     try:
         contents_ = get_kindle_list()
-        create_post("ビジネス・経済本のおすすめ", contents_)
+        post_contents("ビジネス・経済本のおすすめ", contents_)
     except:
         print_exc()
