@@ -107,3 +107,5 @@ credentials.csv
 venv_kindle
 output.html
 kindle_list.template
+kindle_list.template.bak
+get_kindle_list.py

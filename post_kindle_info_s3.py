@@ -35,8 +35,9 @@ def create_kindle_list():
     books = get_kindle_books()
     contents = ""
 
-    c_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    contents += "更新日時：" + c_date
+    c_date = datetime.now().strftime("%Y/%m/%d")
+    contents += "<h2>ビジネス・経済本のおすすめ（" + c_date + "更新）</h2>"
+    contents += "<hr>"
 
     for book in books:
         try:
