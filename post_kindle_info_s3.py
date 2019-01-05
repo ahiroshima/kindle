@@ -46,8 +46,8 @@ def create_kindle_list():
             contents +=          "<div><h3>{}</h3></div>\n\n".format(book.title.text)
             contents +=          "<div>著者：{}</div>".format(book.author.text)
             contents +=          "<div><a href = '{}'><img src = '{}'></a></div><!-- 画像-->\n".format(book.detailpageurl.text, book.mediumimage.url.text)
-            contents +=          "<div><blockquote class='blockquote'><p class='mb-0'>{}<p></blockquote></div><!-- 内容-->\n".format(book.content.text[:200])
-            contents +=          "<div><a href='{}'>詳細はこちら</a></div><!-- リンク-->\n".format(book.detailpageurl.text)
+            contents +=          "<div><blockquote class='blockquote'><p class='mb-0'>{}...<p></blockquote></div><!-- 内容-->\n".format(book.content.text[:200])
+            contents +=          "<div><a href='{}'>価格・レビューなど詳細はこちら(Amazonのサイトに遷移します)</a></div><!-- リンク-->\n".format(book.detailpageurl.text)
             contents +=      "</div>"
             contents += "</div>"
             contents += "<hr>"
