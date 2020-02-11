@@ -109,3 +109,5 @@ output.html
 kindle_list.template
 kindle_list.template.bak
 get_kindle_list.py
+get_kindle_list_v5.py
+.gitignore

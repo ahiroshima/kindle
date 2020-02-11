@@ -5,6 +5,7 @@ import os
 from traceback import print_exc
 from urllib.parse import urljoin
 from datetime import datetime
+from dotenv import load_dotenv
 
 from paapi5_python_sdk.api.default_api import DefaultApi
 from paapi5_python_sdk.partner_type import PartnerType
@@ -12,16 +13,18 @@ from paapi5_python_sdk.rest import ApiException
 from paapi5_python_sdk.search_items_request import SearchItemsRequest
 from paapi5_python_sdk.search_items_resource import SearchItemsResource
 
-# depend on your WP environment.
-WP_BASE_URL = "http://localhost/"
-PAGE_ID = "398"     # Target page ID
-USER_ID = 2         # User ID for WP
-CATEGORY_IDS = [80] # Kindle Books category
 
 def post_contents(title_, contents_):
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    load_dotenv(env_path)
     # credential情報は環境変数から取得
     WP_USER = os.environ.get('WP_USER')
     WP_PASS = os.environ.get('WP_PASS')
+    WP_BASE_URL = os.environ.get("WP_BASE_URL")
+    PAGE_ID = os.environ.get("PAGE_ID")
+    USER_ID = os.environ.get("USER_ID")
+    CATEGORY_IDS = os.environ.get("CATEGORY_IDS")
+
     # build request body
     payload = {"title": title_,
                "content": contents_,
@@ -29,7 +32,7 @@ def post_contents(title_, contents_):
                "date": datetime.now().isoformat(),
                "categories": CATEGORY_IDS,
                "status": "publish"}
-    # 作成済みの固定ページ：ID398に対して更新を行う
+    # 作成済みの固定ページに対して更新を行う
     res = requests.post(urljoin(WP_BASE_URL, "wp-json/wp/v2/pages" + "/" + PAGE_ID),
                         data=json.dumps(payload),
                         headers={'Content-type': "application/json"},
@@ -38,9 +41,9 @@ def post_contents(title_, contents_):
 
 
 def get_kindle_books():
-    AMAZON_ACCESS_KEY = os.environ.get('AMAZON_ACCESS_KEY')
-    AMAZON_SECRET_KEY = os.environ.get('AMAZON_SECRET_KEY')
-    AMAZON_ASSOC_TAG = os.environ.get('AMAZON_ASSOC_TAG')
+    AMAZON_ACCESS_KEY = os.environ.get("AMAZON_ACCESS_KEY")
+    AMAZON_SECRET_KEY = os.environ.get("AMAZON_SECRET_KEY")
+    AMAZON_ASSOC_TAG = os.environ.get("AMAZON_ASSOC_TAG")
 
     HOST = "webservices.amazon.co.jp"
     REGION = "us-west-2"
@@ -50,10 +53,13 @@ def get_kindle_books():
     )
 
     # request paraeters
-    KEYWORDS = "*"
-    SEARCH_INDEX = "KindleStore"
-    BROWSE_NODE_ID = "2291905051"
-    ITEM_COUNT = 10
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    load_dotenv(env_path)
+
+    KEYWORDS = os.environ.get("KEYWORDS")
+    SEARCH_INDEX = os.environ.get("SEARCH_INDEX")
+    BROWSE_NODE_ID = os.environ.get("BROWSE_NODE_ID")
+    ITEM_COUNT = int(os.environ.get("ITEM_COUNT"))
 
     # For more details, refer: https://webservices.amazon.com/paapi5/documentation/search-items.html#resources-parameter
     search_items_resource = [

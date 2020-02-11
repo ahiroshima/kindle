@@ -7,6 +7,7 @@ from traceback import print_exc
 from urllib.parse import urljoin
 from datetime import datetime
 from string import Template
+from dotenv import load_dotenv
 
 from paapi5_python_sdk.api.default_api import DefaultApi
 from paapi5_python_sdk.partner_type import PartnerType
@@ -16,9 +17,9 @@ from paapi5_python_sdk.search_items_resource import SearchItemsResource
 
 
 def get_kindle_books():
-    AMAZON_ACCESS_KEY = os.environ.get('AMAZON_ACCESS_KEY')
-    AMAZON_SECRET_KEY = os.environ.get('AMAZON_SECRET_KEY')
-    AMAZON_ASSOC_TAG = os.environ.get('AMAZON_ASSOC_TAG')
+    AMAZON_ACCESS_KEY = os.environ.get("AMAZON_ACCESS_KEY")
+    AMAZON_SECRET_KEY = os.environ.get("AMAZON_SECRET_KEY")
+    AMAZON_ASSOC_TAG = os.environ.get("AMAZON_ASSOC_TAG")
 
     HOST = "webservices.amazon.co.jp"
     REGION = "us-west-2"
@@ -28,10 +29,13 @@ def get_kindle_books():
     )
 
     # request paraeters
-    KEYWORDS = "*"
-    SEARCH_INDEX = "KindleStore"
-    BROWSE_NODE_ID = "2291905051"
-    ITEM_COUNT = 10
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    load_dotenv(env_path)
+
+    KEYWORDS = os.environ.get("KEYWORDS")
+    SEARCH_INDEX = os.environ.get("SEARCH_INDEX")
+    BROWSE_NODE_ID = os.environ.get("BROWSE_NODE_ID")
+    ITEM_COUNT = int(os.environ.get("ITEM_COUNT"))
 
     # For more details, refer: https://webservices.amazon.com/paapi5/documentation/search-items.html#resources-parameter
     search_items_resource = [
