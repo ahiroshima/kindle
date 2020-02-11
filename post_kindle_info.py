@@ -1,22 +1,19 @@
 import json
 import requests
+import bottlenose
 import time
+import requests
 import os
 from traceback import print_exc
 from urllib.parse import urljoin
 from datetime import datetime
+from bs4 import BeautifulSoup
 
-from paapi5_python_sdk.api.default_api import DefaultApi
-from paapi5_python_sdk.partner_type import PartnerType
-from paapi5_python_sdk.rest import ApiException
-from paapi5_python_sdk.search_items_request import SearchItemsRequest
-from paapi5_python_sdk.search_items_resource import SearchItemsResource
-
-# depend on your WP environment.
-WP_BASE_URL = "http://localhost/"
-PAGE_ID = "398"     # Target page ID
-USER_ID = 2         # User ID for WP
-CATEGORY_IDS = [80] # Kindle Books category
+# WP環境に合わせて変更すること
+wp_base_url_ = "http://localhost/"
+page_id = "398"     # ポスト対象のページID 事前にWordPressのAPIなどで調べておく
+user_id = 2         #投稿ユーザーID、事前にWordPressで確認しておく
+category_ids = [80] #Kindle Booksカテゴリー
 
 def post_contents(title_, contents_):
     # credential情報は環境変数から取得
@@ -25,12 +22,12 @@ def post_contents(title_, contents_):
     # build request body
     payload = {"title": title_,
                "content": contents_,
-               "author": USER_ID,
+               "author": user_id,
                "date": datetime.now().isoformat(),
-               "categories": CATEGORY_IDS,
+               "categories": category_ids,
                "status": "publish"}
     # 作成済みの固定ページ：ID398に対して更新を行う
-    res = requests.post(urljoin(WP_BASE_URL, "wp-json/wp/v2/pages" + "/" + PAGE_ID),
+    res = requests.post(urljoin(wp_base_url_, "wp-json/wp/v2/pages" + "/" + page_id),
                         data=json.dumps(payload),
                         headers={'Content-type': "application/json"},
                         auth=(WP_USER, WP_PASS))
@@ -38,69 +35,30 @@ def post_contents(title_, contents_):
 
 
 def get_kindle_books():
-    AMAZON_ACCESS_KEY = os.environ.get('AMAZON_ACCESS_KEY')
-    AMAZON_SECRET_KEY = os.environ.get('AMAZON_SECRET_KEY')
-    AMAZON_ASSOC_TAG = os.environ.get('AMAZON_ASSOC_TAG')
-
-    HOST = "webservices.amazon.co.jp"
-    REGION = "us-west-2"
-
-    default_api = DefaultApi(
-        access_key=AMAZON_ACCESS_KEY, secret_key=AMAZON_SECRET_KEY, host=HOST, region=REGION
-    )
-
-    # request paraeters
-    KEYWORDS = "*"
-    SEARCH_INDEX = "KindleStore"
-    BROWSE_NODE_ID = "2291905051"
-    ITEM_COUNT = 10
-
-    # For more details, refer: https://webservices.amazon.com/paapi5/documentation/search-items.html#resources-parameter
-    search_items_resource = [
-        SearchItemsResource.ITEMINFO_TITLE,
-        SearchItemsResource.OFFERS_LISTINGS_PRICE,
-        SearchItemsResource.ITEMINFO_BYLINEINFO,
-        SearchItemsResource.ITEMINFO_CONTENTINFO,
-        SearchItemsResource.ITEMINFO_TECHNICALINFO,
-        SearchItemsResource.IMAGES_PRIMARY_LARGE
-    ]
-
     try:
-        # Forming request
-        search_items_request = SearchItemsRequest(
-            partner_tag=AMAZON_ASSOC_TAG,
-            partner_type=PartnerType.ASSOCIATES,
-            keywords=KEYWORDS,
-            search_index=SEARCH_INDEX,
-            browse_node_id=BROWSE_NODE_ID,
-            item_count=ITEM_COUNT,
-            resources=search_items_resource,
-        )
-        # Sending request
-        response = default_api.search_items(search_items_request)
-        # print("Complete Response:", response)
+        AMAZON_ACCESS_KEY = os.environ.get('AMAZON_ACCESS_KEY')
+        AMAZON_SECRET_KEY = os.environ.get('AMAZON_SECRET_KEY')
+        AMAZON_ASSOC_TAG = os.environ.get('AMAZON_ASSOC_TAG')
 
-        # Parse response
-        if response.errors is not None:
-            print("\nPrinting Errors:\nPrinting First Error Object from list of Errors")
-            print("Error code", response.errors[0].code)
-            print("Error message", response.errors[0].message)
-            return
-
-        if response.search_result is not None:
-            print("API called Successfully")
-            return(response.search_result.items)
-
+        amazon = bottlenose.Amazon(AMAZON_ACCESS_KEY,AMAZON_SECRET_KEY, AMAZON_ASSOC_TAG, Region='JP')
+        res = amazon.ItemSearch(
+            SearchIndex = 'KindleStore',
+            BrowseNode = 2291905051,
+            ResponseGroup= 'Large'
+                )
+        soup = BeautifulSoup(res,"lxml")
+        print("Kindle book list have been acquired.")
+        return (soup.findAll("item"))
     except:
         print_exc()
         raise Exception
 
 
-def create_kindle_list():
+def get_kindle_list():
     books = get_kindle_books()
     contents = ""
 
-    c_date = datetime.now().strftime("%Y/%m/%d")
+    c_date = datetime.now().strftime("%Y/%m/%d)
     contents += "<h2>ビジネス・経済本のおすすめ（" + c_date + "更新）</h2>"
     contents += "<hr>"
 
@@ -108,13 +66,11 @@ def create_kindle_list():
         try:
             contents += "<div class='row'>"
             contents +=      "<div class='col-md-10 col-md-offset-1'>"
-            contents +=          "<div><h3>{}</h3></div>\n\n".format(book.item_info.title.display_value)
-            contents +=          "<div>著者：{}</div>".format(book.item_info.by_line_info.contributors[0].name)
-            contents +=          "<div><a href = '{}'><img src = '{}'></a></div><!-- 画像-->\n".format(book.detail_page_url, book.images.primary.large.url)
-# "content.text" is NOT suported as of Feb.2020.
-#            contents +=          "<div><blockquote class='blockquote'><p class='mb-0'>{}...<p></blockquote></div><!-- 内容-->\n".format(book.content.text[:200])
-            contents +=          "<div><blockquote class='blockquote'><p class='mb-0'>Kindle版(電子書籍) : {}<p></blockquote></div><!-- 価格 -->\n".format(book.offers.listings[0].price.display_amount)
-            contents +=          "<div><a href='{}'>本の内容・レビューなど詳細はこちら(Amazonのサイトに遷移します)</a></div><!-- リンク-->\n".format(book.detail_page_url)
+            contents +=          "<div><h3>{}</h3></div>\n\n".format(book.title.text)
+            contents +=          "<div>著者：{}</div>".format(book.author.text)
+            contents +=          "<div><a href = '{}'><img src = '{}'></a></div><!-- 画像-->\n".format(book.detailpageurl.text, book.largeimage.url.text)
+            contents +=          "<div><blockquote class='blockquote'><p class='mb-0'>{}<p></blockquote></div><!-- 内容-->\n".format(book.content.text)
+            contents +=          "<div><a href='{}'>詳細はこちら</a></div><!-- リンク-->\n".format(book.detailpageurl.text)
             contents +=      "</div>"
             contents += "</div>"
             contents += "<hr>"
@@ -128,7 +84,7 @@ def create_kindle_list():
 
 if __name__ == "__main__":
     try:
-        contents_ = create_kindle_list()
+        contents_ = get_kindle_list()
         post_contents("ビジネス・経済本のおすすめ", contents_)
     except:
         print_exc()
