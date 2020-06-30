@@ -17,6 +17,9 @@ from paapi5_python_sdk.search_items_resource import SearchItemsResource
 
 
 def get_kindle_books():
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    load_dotenv(env_path)
+
     AMAZON_ACCESS_KEY = os.environ.get("AMAZON_ACCESS_KEY")
     AMAZON_SECRET_KEY = os.environ.get("AMAZON_SECRET_KEY")
     AMAZON_ASSOC_TAG = os.environ.get("AMAZON_ASSOC_TAG")
@@ -29,9 +32,6 @@ def get_kindle_books():
     )
 
     # request paraeters
-    env_path = os.path.join(os.path.dirname(__file__), '.env')
-    load_dotenv(env_path)
-
     KEYWORDS = os.environ.get("KEYWORDS")
     SEARCH_INDEX = os.environ.get("SEARCH_INDEX")
     BROWSE_NODE_ID = os.environ.get("BROWSE_NODE_ID")
@@ -122,6 +122,9 @@ def create_contents():
 
 def post_to_s3(contents):
     try:
+        env_path = os.path.join(os.path.dirname(__file__), '.env')
+        load_dotenv(env_path)
+
         S3_BUCKET = os.environ.get('S3_BUCKET')
         open('./output.html', mode='w').write(contents)
         s3 = boto3.client('s3')
