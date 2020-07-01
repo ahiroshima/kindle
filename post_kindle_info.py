@@ -33,7 +33,11 @@ def post_contents(title_, contents_):
                "categories": CATEGORY_IDS,
                "status": "publish"}
     # 作成済みの固定ページに対して更新を行う
-    res = requests.post(urljoin(WP_BASE_URL, "wp-json/wp/v2/pages" + "/" + PAGE_ID),
+    #res = requests.post(urljoin(WP_BASE_URL, "wp-json/wp/v2/pages" + "/" + PAGE_ID),
+    #                    data=json.dumps(payload),
+    #                    headers={'Content-type': "application/json"},
+    #                    auth=(WP_USER, WP_PASS))
+    res = requests.post(urljoin(WP_BASE_URL, "wp-json/wp/v2/posts"),
                         data=json.dumps(payload),
                         headers={'Content-type': "application/json"},
                         auth=(WP_USER, WP_PASS))
@@ -41,6 +45,9 @@ def post_contents(title_, contents_):
 
 
 def get_kindle_books():
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    load_dotenv(env_path)
+
     AMAZON_ACCESS_KEY = os.environ.get("AMAZON_ACCESS_KEY")
     AMAZON_SECRET_KEY = os.environ.get("AMAZON_SECRET_KEY")
     AMAZON_ASSOC_TAG = os.environ.get("AMAZON_ASSOC_TAG")
@@ -53,9 +60,6 @@ def get_kindle_books():
     )
 
     # request paraeters
-    env_path = os.path.join(os.path.dirname(__file__), '.env')
-    load_dotenv(env_path)
-
     KEYWORDS = os.environ.get("KEYWORDS")
     SEARCH_INDEX = os.environ.get("SEARCH_INDEX")
     BROWSE_NODE_ID = os.environ.get("BROWSE_NODE_ID")
@@ -107,7 +111,8 @@ def create_kindle_list():
     contents = ""
 
     c_date = datetime.now().strftime("%Y/%m/%d")
-    contents += "<h2>ビジネス・経済本のおすすめ（" + c_date + "更新）</h2>"
+    contents += "<h2>Kindle本のセール＆キャンペーン情報です</h2>"
+    contents += "(ご注意)※Kindle日替わりセール対象商品の割引価格は、各日 午前0時00分から午後11時59分（日本時間）までの間のみ有効となります（プロモーション期間）。割引価格は、セール開始の数時間前から表示される場合があります。"
     contents += "<hr>"
 
     for book in books:
@@ -135,6 +140,6 @@ def create_kindle_list():
 if __name__ == "__main__":
     try:
         contents_ = create_kindle_list()
-        post_contents("ビジネス・経済本のおすすめ", contents_)
+        post_contents("Kindle本 セール&キャンペーン", contents_)
     except:
         print_exc()
