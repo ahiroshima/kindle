@@ -13,7 +13,7 @@ idna==2.7
 itsdangerous==1.1.0
 Jinja2==2.11.3
 jmespath==0.9.3
-lxml==4.6.3
+lxml==4.9.1
 MarkupSafe==1.0
 pyasn1==0.4.4
 python-dateutil==2.7.5
