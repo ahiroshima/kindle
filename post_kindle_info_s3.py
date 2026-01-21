@@ -14,6 +14,7 @@ from paapi5_python_sdk.partner_type import PartnerType
 from paapi5_python_sdk.rest import ApiException
 from paapi5_python_sdk.search_items_request import SearchItemsRequest
 from paapi5_python_sdk.search_items_resource import SearchItemsResource
+from paapi5_python_sdk.offers_v2 import OffersV2
 
 
 def get_kindle_books():
@@ -40,7 +41,9 @@ def get_kindle_books():
     # For more details, refer: https://webservices.amazon.com/paapi5/documentation/search-items.html#resources-parameter
     search_items_resource = [
         SearchItemsResource.ITEMINFO_TITLE,
-        SearchItemsResource.OFFERS_LISTINGS_PRICE,
+        SearchItemsResource.OFFERSV2_LISTINGS_PRICE,        # OffersV2: 新形式（優先）
+        SearchItemsResource.OFFERSV2_LISTINGS_DEALDETAILS,  # OffersV2: セール情報
+        SearchItemsResource.OFFERS_LISTINGS_PRICE,          # Offers v1: 互換性維持
         SearchItemsResource.ITEMINFO_BYLINEINFO,
         SearchItemsResource.ITEMINFO_CONTENTINFO,
         SearchItemsResource.ITEMINFO_TECHNICALINFO,
@@ -78,6 +81,48 @@ def get_kindle_books():
         raise Exception
 
 
+def format_price_info(book):
+    """
+    OffersV2またはOffers v1から価格情報をフォーマット
+    
+    Args:
+        book: Item オブジェクト
+    
+    Returns:
+        str: フォーマット済み価格情報
+    """
+    try:
+        # OffersV2の場合（優先）
+        if hasattr(book, 'offers_v2') and book.offers_v2 and book.offers_v2.listings:
+            listing = book.offers_v2.listings[0]
+            price_parts = []
+            
+            # メイン価格
+            if listing.price and listing.price.money and listing.price.money.display_amount:
+                price_parts.append(listing.price.money.display_amount)
+            
+            # 割引情報
+            if listing.price and listing.price.savings and listing.price.savings.percentage:
+                price_parts.append(f"({listing.price.savings.percentage}%OFF)")
+            
+            # セール情報
+            if listing.deal_details and listing.deal_details.badge:
+                price_parts.append(f"【{listing.deal_details.badge}】")
+            
+            if price_parts:
+                return " ".join(price_parts)
+        
+        # Offers v1へのフォールバック
+        if book.offers and book.offers.listings:
+            return book.offers.listings[0].price.display_amount
+        
+        return "価格情報なし"
+    
+    except Exception as e:
+        print(f"Error formatting price: {e}")
+        return "価格情報なし"
+
+
 def create_kindle_list():
     books = get_kindle_books()
     contents = ""
@@ -95,7 +140,8 @@ def create_kindle_list():
             contents +=          "<div><a href = '{}'><img src = '{}'></a></div><!-- 画像-->\n".format(book.detail_page_url, book.images.primary.large.url)
 # "content.text" is NOT suported as of Feb.2020.
 #            contents +=          "<div><blockquote class='blockquote'><p class='mb-0'>{}...<p></blockquote></div><!-- 内容-->\n".format(book.content.text[:200])
-            contents +=          "<div><blockquote class='blockquote'><p class='mb-0'>Kindle版(電子書籍) : {}<p></blockquote></div><!-- 価格 -->\n".format(book.offers.listings[0].price.display_amount)
+            price_info = format_price_info(book)
+            contents +=          "<div><blockquote class='blockquote'><p class='mb-0'>Kindle版(電子書籍) : {}<p></blockquote></div><!-- 価格 -->\n".format(price_info)
             contents +=          "<div><a href='{}'>本の内容・レビューなど詳細はこちら(Amazonのサイトに遷移します)</a></div><!-- リンク-->\n".format(book.detail_page_url)
             contents +=      "</div>"
             contents += "</div>"
